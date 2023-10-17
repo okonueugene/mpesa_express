@@ -13,7 +13,25 @@ Before you can use this STK Push request service, make sure you have the followi
 
 To get started, follow these steps:
 
-1. Download the ZIP file for this project and extract it to your desired location.
+1. Download the ZIP file for this project and extract it to your desired location or clone the repository using the following command:
+
+```bash
+git clone https://github.com/okonueugene/mpesa_express.git
+```
+
+2. Navigate to the project directory and install the required dependencies using the following command:
+
+```bash
+npm install
+```
+
+3.Run the application using the following command:
+
+```bash
+npm start
+```
+
+it will run on port 3000
 
 ## Usage
 
