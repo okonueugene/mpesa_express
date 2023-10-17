@@ -1,0 +1,13 @@
+{
+  "consumerKey": "your_consumer_key",
+  "consumerSecret": "your_consumer_secret",
+  "businessShortCode": "174379",
+  "passkey": "your_passkey",
+  "phoneNumber": "2547xxxxxxxx",
+  "tokenString": "5f1a2b3c4d56f7g8h9i",
+  "amount": "1",
+  "customerName": "Test Customer",
+  "callbackUrl": "https://app.askaritechnologies.com/api/shop/callback?token=${tokenString}",
+  "authorizationUrl": "https://sandbox.safaricom.co.ke/oauth/v1/generate?grant_type=client_credentials",
+  "stkPushUrl": "https://sandbox.safaricom.co.ke/mpesa/stkpush/v1/processrequest"
+}
