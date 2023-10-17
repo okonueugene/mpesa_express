@@ -1,6 +1,6 @@
 # Mpesa Express STK Push Request
 
-This repository provides a simple STK Push request implementation using the Safaricom Mpesa Express Sandbox API. It allows you to initiate secure mobile money transactions. The service can be accessed via the following URL: `host/api/stkpush`.
+This repository provides a simple STK Push request implementation using the Safaricom Mpesa Express Sandbox API. It allows you to initiate secure mobile money transactions. The service can be accessed via the following URL: `host:3000/api/stkpush`.
 
 ## Prerequisites
 
@@ -35,7 +35,7 @@ it will run on port 3000
 
 ## Usage
 
-You can easily use the STK Push request by making a POST request to the following URL: `host/api/stkpush`. Provide the necessary input parameters in the JSON body as follows:
+You can easily use the STK Push request by making a POST request to the following URL: `host:3000/api/stkpush`. Provide the necessary input parameters in the JSON body as follows:
 
 ```json
 {
