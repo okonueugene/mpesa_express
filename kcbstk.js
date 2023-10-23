@@ -1,20 +1,22 @@
 const axios = require("axios");
 const fs = require("fs");
 
-//read data from keys.json
+// Read data from keys.json
 const keys = JSON.parse(fs.readFileSync("keys.json", "utf-8"));
 
-//aplly destructuring to keys object
-const consumerKey = keys.consumerKey;
-const consumerSecret = keys.consumerSecret;
-const businessShortCode = keys.businessShortCode;
-const passkey = keys.passkey;
-const phoneNumber = keys.phoneNumber;
-const callbackUrl = keys.callbackUrl;
-const amount = keys.amount;
-const customerName = keys.customerName;
-const authorizationUrl = keys.authorizationUrl;
-const stkPushUrl = keys.stkPushUrl;
+// Apply destructuring to keys object
+const {
+  consumerKey,
+  consumerSecret,
+  businessShortCode,
+  passkey,
+  phoneNumber,
+  callbackUrl,
+  amount,
+  customerName,
+  authorizationUrl,
+  stkPushUrl
+} = keys;
 
 async function generateAccessToken() {
   const credentials = Buffer.from(`${consumerKey}:${consumerSecret}`).toString(
@@ -31,6 +33,59 @@ async function generateAccessToken() {
     return accessToken;
   } catch (error) {
     console.error("Error generating access token:", error);
+    throw error;
+  }
+}
+
+async function validateRequestData(requestData) {
+  // Check if all required fields are present
+  const requiredFields = [
+    "BusinessShortCode",
+    "Password",
+    "Timestamp",
+    "TransactionType",
+    "Amount",
+    "PartyA",
+    "PartyB",
+    "PhoneNumber",
+    "CallBackURL",
+    "AccountReference",
+    "TransactionDesc"
+  ];
+
+  for (const field of requiredFields) {
+    if (!requestData.hasOwnProperty(field)) {
+      throw new Error(`Missing required field: ${field}`);
+    }
+  }
+
+  // Check if the amount is valid
+  if (isNaN(requestData.Amount) || requestData.Amount < 1) {
+    throw new Error("Invalid amount");
+  }
+
+  // Check if the phone number is in the correct format (254XXXXXXXXX)
+  if (!requestData.PhoneNumber.match(/^2547\d{8}$/)) {
+    throw new Error("Invalid phone number");
+  } else {
+    //format phone number to 2547XXXXXXXX
+    requestData.PhoneNumber = requestData.PhoneNumber.replace(/^07/, "2547");
+  }
+}
+
+async function handleResponse(response) {
+  if (response.data.ResponseCode) {
+    // Check if the response code is a success
+    if (response.data.ResponseCode === "0") {
+      console.log(
+        "STK push was successful:",
+        response.data.ResponseDescription
+      );
+    } else {
+      console.error("STK push failed with code:", response.data.ResponseCode);
+    }
+  } else {
+    console.error("ResponseCode not found in the response");
   }
 }
 
@@ -57,10 +112,12 @@ async function stkPush() {
     PhoneNumber: phoneNumber,
     CallBackURL: callbackUrl,
     AccountReference: customerName,
-    TransactionDesc: "Testing stk push on sandbox"
+    TransactionDesc: "Testing STK push on sandbox"
   };
 
   try {
+    await validateRequestData(requestData);
+
     const response = await axios.post(stkPushUrl, requestData, {
       headers: {
         "Content-Type": "application/json",
@@ -68,16 +125,9 @@ async function stkPush() {
       }
     });
 
-    console.log(response.data);
-
-    if (response.data.ResponseCode) {
-      return response.data.ResponseCode;
-    } else {
-      return "ResponseCode not found in the response";
-    }
+    handleResponse(response);
   } catch (error) {
     console.error("An error occurred:", error);
-    return "Invalid JSON response";
   }
 }
 
