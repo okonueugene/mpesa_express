@@ -9,6 +9,20 @@ Before you can use this STK Push request service, make sure you have the followi
 1. A working Mpesa Express Sandbox account.
 2. A registered Safaricom developer account for API access.
 
+You will have to acquire the following credentials from your Safaricom developer account:
+
+```json
+{
+  "consumerKey": "YOUR_CONSUMER_KEY",
+  "consumerSecret": "YOUR_CONSUMER_SECRET",
+  "businessShortCode": "YOUR_BUSINESS_SHORT_CODE",
+  "passkey": "YOUR_PASSKEY",
+  "phoneNumber": "YOUR_PHONE_NUMBER",
+  "amount": "YOUR_AMOUNT",
+  "callbackUrl": "YOUR_CALLBACK_URL"
+}
+```
+
 ## Installation
 
 To get started, follow these steps:
