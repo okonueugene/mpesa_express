@@ -35,16 +35,11 @@ it will run on port 3000
 
 ## Usage
 
-You can easily use the STK Push request by making a POST request to the following URL: `host:3000/api/stkpush`. Provide the necessary input parameters in the JSON body as follows:
+You can easily use the STK Push request by making a POST request to the following URL: `host:3000/api/stkpush`. Provide the necessary input parameters in the JSON body or parameter as follows:
 
 ```json
 {
-  "consumerKey": "YOUR_CONSUMER_KEY",
-  "consumerSecret": "YOUR_CONSUMER_SECRET",
-  "businessShortCode": "YOUR_BUSINESS_SHORT_CODE",
-  "passkey": "YOUR_PASSKEY",
   "phoneNumber": "YOUR_PHONE_NUMBER",
-  "amount": "YOUR_AMOUNT",
-  "callbackUrl": "YOUR_CALLBACK_URL"
+  "amount": "YOUR_AMOUNT"
 }
 ```
