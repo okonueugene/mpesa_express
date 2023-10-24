@@ -13,9 +13,9 @@ const bodyParser = require("body-parser");
 app.use(bodyParser.urlencoded({ extended: false }));
 
 app.use(bodyParser.json());
-// route to kcbstk.js
-// route to kcbstk.js
-app.post("/api/kcbstk", (req, res) => {
+// route to stkpush.js
+// route to stkpush.js
+app.post("/api/stkpush", (req, res) => {
   let phoneNumber = req.body.phoneNumber;
   let amount = req.body.amount;
 
@@ -34,7 +34,7 @@ app.post("/api/kcbstk", (req, res) => {
   }
 
   const { spawn } = require("child_process");
-  const child = spawn("node", ["kcbstk.js", phoneNumber, amount]);
+  const child = spawn("node", ["stkpush.js", phoneNumber, amount]);
 
   let output = "";
   let errorOutput = ""; // Capture error output
@@ -50,19 +50,19 @@ app.post("/api/kcbstk", (req, res) => {
   });
 
   child.on("close", (code) => {
-    console.log(`kcbstk.js exited with code ${code}`);
+    console.log(`stkpush.js exited with code ${code}`);
 
     if (code === 0) {
       const jsonResponse = {
         status: "success",
-        message: "kcbstk.js executed successfully",
+        message: "stkpush.js executed successfully",
         output: output.split(":")[0]
       };
       res.status(200).json(jsonResponse);
     } else {
       const jsonResponse = {
         status: "error",
-        message: `kcbstk.js exited with code ${code}`,
+        message: `stkpush.js exited with code ${code}`,
         errorOutput: errorOutput.split(":")[2].split("\n")[0],
         time: new Date().toLocaleString()
       };

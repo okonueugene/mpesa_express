@@ -1,6 +1,6 @@
 # Mpesa Express STK Push Request
 
-This repository provides a simple STK Push request implementation using the Safaricom Mpesa Express Sandbox API. It allows you to initiate secure mobile money transactions. The service can be accessed via the following URL: `https://dark-gray-chipmunk-wig.cyclic.app/api/kcbstk?phoneNumber=?&amount=?`
+This repository provides a simple STK Push request implementation using the Safaricom Mpesa Express Sandbox API. It allows you to initiate secure mobile money transactions. The service can be accessed via the following URL: `https://dark-gray-chipmunk-wig.cyclic.app/api/stkpush?phoneNumber=?&amount=?`
 
 ## Prerequisites
 
@@ -65,6 +65,6 @@ amount: YOUR_AMOUNT
 
 OR
 
-Use this Cyclic endpoint to test the service: `https://dark-gray-chipmunk-wig.cyclic.app/api/kcbstk?phoneNumber=?&amount=?` which you input your phone number and amount in the query parameters.
+Use this Cyclic endpoint to test the service: `https://dark-gray-chipmunk-wig.cyclic.app/api/stkpush?phoneNumber=?&amount=?` which you input your phone number and amount in the query parameters.
 
 You can test the service using Postman or any other API testing tool of your choice.
