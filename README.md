@@ -57,3 +57,9 @@ You can easily use the STK Push request by making a POST request to the followin
   "amount": "YOUR_AMOUNT"
 }
 ```
+
+OR
+
+Use this Cyclic endpoint to test the service: `https://dark-gray-chipmunk-wig.cyclic.app/api/kcbstk?phoneNumber=?&amount=?` which you input your phone number and amount in the query parameters.
+
+You can test the service using Postman or any other API testing tool of your choice.
