@@ -1,6 +1,6 @@
 # Mpesa Express STK Push Request
 
-This repository provides a simple STK Push request implementation using the Safaricom Mpesa Express Sandbox API. It allows you to initiate secure mobile money transactions. The service can be accessed via the following URL: `host:3000/api/stkpush`.
+This repository provides a simple STK Push request implementation using the Safaricom Mpesa Express Sandbox API. It allows you to initiate secure mobile money transactions. The service can be accessed via the following URL: `https://dark-gray-chipmunk-wig.cyclic.app/api/kcbstk?phoneNumber=?&amount=?`
 
 ## Prerequisites
 
@@ -49,13 +49,18 @@ it will run on port 3000
 
 ## Usage
 
-You can easily use the STK Push request by making a POST request to the following URL: `host:3000/api/stkpush`. Provide the necessary input parameters in the JSON body or parameter as follows:
+You can easily use the STK Push request by making a POST request to the following URL: `localhost:3000/api/stkpush`. Provide the necessary input parameters in the JSON body or parameter as follows:
 
 ```json
 {
   "phoneNumber": "YOUR_PHONE_NUMBER",
   "amount": "YOUR_AMOUNT"
 }
+```
+
+```param
+phoneNumber: YOUR_PHONE_NUMBER
+amount: YOUR_AMOUNT
 ```
 
 OR
