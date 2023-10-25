@@ -111,6 +111,18 @@ app.get("/api/callback", (req, res) => {
   });
 });
 
+// route to read from stk_push_result
+app.get("/api/stkpush/result", (req, res) => {
+  //read from stk_push_result.json
+  const content = fs.readFileSync("stk_push_result.json", "utf8");
+  const jsonResponse = {
+    status: "success",
+    message: "stk_push_result.json read successfully",
+    data: JSON.parse(content)
+  };
+  res.status(200).json(jsonResponse);
+});
+
 //server
 const port = 3000;
 app.listen(port, () => {
