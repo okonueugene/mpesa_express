@@ -11,7 +11,7 @@ async function getStkPushResult(request) {
 
   const token = parsedUrl.searchParams.get("token");
 
-  // append the token to the content object and write to file
+  // append the token to the content object and write to file and create if it doesn't exis
   content.token = token;
   fs.writeFileSync("stk_push_result.json", JSON.stringify(content));
 
