@@ -71,6 +71,46 @@ app.post("/api/stkpush", (req, res) => {
   });
 });
 
+// route to callback.js
+app.get("/api/callback", (req, res) => {
+  const { spawn } = require("child_process");
+  const child = spawn("node", ["callback.js"]);
+
+  let output = "";
+  let errorOutput = ""; // Capture error output
+
+  child.stdout.on("data", (data) => {
+    output += data.toString();
+    console.log(`stdout:\n${data}`);
+  });
+
+  child.stderr.on("data", (data) => {
+    errorOutput += data.toString(); // Capture error output
+    console.error(`stderr:\n${data}`);
+  });
+
+  child.on("close", (code) => {
+    console.log(`callback.js exited with code ${code}`);
+
+    if (code === 0) {
+      const jsonResponse = {
+        status: "success",
+        message: "callback.js executed successfully",
+        output: output.split(":")[0]
+      };
+      res.status(200).json(jsonResponse);
+    } else {
+      const jsonResponse = {
+        status: "error",
+        message: `callback.js exited with code ${code}`,
+        errorOutput: errorOutput.split(":")[2].split("\n")[0],
+        time: new Date().toLocaleString()
+      };
+      res.status(500).json(jsonResponse);
+    }
+  });
+});
+
 //server
 const port = 3000;
 app.listen(port, () => {
