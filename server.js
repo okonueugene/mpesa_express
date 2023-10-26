@@ -133,7 +133,7 @@ app.get("/api/stkpush/result", (req, res) => {
   res.status(200).json(jsonResponse);
 });
 // route to clear callback.json
-app.post("/api/freejson", (req, res) => {
+app.delete("/api/freejson", (req, res) => {
   //clear callback.json
   fs.writeFileSync("callback.json", "[]");
   const jsonResponse = {
