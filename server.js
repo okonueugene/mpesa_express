@@ -80,6 +80,11 @@ app.post("/api/callback", (req, res) => {
   // Retrieve the token from the query parameter (equivalent to Laravel's $request->fullUrl())
   const token = req.query.token;
 
+  //check if callback.json exists
+  if (!fs.existsSync("callback.json")) {
+    fs.writeFileSync("callback.json", "[]");
+  }
+
   // Read the existing JSON data from the file, or initialize an empty array
   let existingData = [];
 
