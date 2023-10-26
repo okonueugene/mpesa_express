@@ -132,6 +132,16 @@ app.get("/api/stkpush/result", (req, res) => {
   };
   res.status(200).json(jsonResponse);
 });
+// route to clear callback.json
+app.delete("/api/freejson", (req, res) => {
+  //clear callback.json
+  fs.writeFileSync("callback.json", "[]");
+  const jsonResponse = {
+    status: "success",
+    message: "callback.json cleared successfully"
+  };
+  res.status(200).json(jsonResponse);
+});
 
 //server
 const port = 3000;
