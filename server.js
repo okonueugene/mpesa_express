@@ -10,10 +10,11 @@ const axios = require("axios");
 
 const bodyParser = require("body-parser");
 
+const mysql = require("mysql2");
+
 app.use(bodyParser.urlencoded({ extended: false }));
 
 app.use(bodyParser.json());
-// route to stkpush.js
 // route to stkpush.js
 app.post("/api/stkpush", (req, res) => {
   let phoneNumber = req.body.phoneNumber;
@@ -72,52 +73,56 @@ app.post("/api/stkpush", (req, res) => {
 });
 
 // route to callback.js
-app.get("/api/callback", (req, res) => {
-  const { spawn } = require("child_process");
-  const child = spawn("node", ["callback.js"]);
+app.post("/api/callback", (req, res) => {
+  // Assuming the request body contains the JSON data from the incoming POST request
+  const content = req.body;
 
-  let output = "";
-  let errorOutput = ""; // Capture error output
+  // Retrieve the token from the query parameter (equivalent to Laravel's $request->fullUrl())
+  const token = req.query.token;
 
-  child.stdout.on("data", (data) => {
-    output += data.toString();
-    console.log(`stdout:\n${data}`);
+  // Read the existing JSON data from the file, or initialize an empty array
+  let existingData = [];
+
+  try {
+    const rawData = fs.readFileSync("callback.json");
+    existingData = JSON.parse(rawData);
+  } catch (error) {
+    console.error(error);
+  }
+
+  // Append the new data to the existing data
+  existingData.push({
+    token,
+    content
   });
 
-  child.stderr.on("data", (data) => {
-    errorOutput += data.toString(); // Capture error output
-    console.error(`stderr:\n${data}`);
-  });
+  // Write the updated data to the file
+  try {
+    fs.writeFileSync("callback.json", JSON.stringify(existingData));
+  } catch (error) {
+    console.error(error);
+  }
 
-  child.on("close", (code) => {
-    console.log(`callback.js exited with code ${code}`);
+  // Send a success response to the caller
 
-    if (code === 0) {
-      const jsonResponse = {
-        status: "success",
-        message: "callback.js executed successfully",
-        output: output.split(":")[0]
-      };
-      res.status(200).json(jsonResponse);
-    } else {
-      const jsonResponse = {
-        status: "error",
-        message: `callback.js exited with code ${code}`,
-        errorOutput: errorOutput.split(":")[2].split("\n")[0],
-        time: new Date().toLocaleString()
-      };
-      res.status(500).json(jsonResponse);
+  const jsonResponse = {
+    status: "success",
+    message: "Callback data received successfully",
+    data: {
+      token,
+      content
     }
-  });
+  };
+  res.status(200).json(jsonResponse);
 });
 
 // route to read from stk_push_result
 app.get("/api/stkpush/result", (req, res) => {
   //read from stk_push_result.json
-  const content = fs.readFileSync("stk_push_result.json", "utf8");
+  const content = fs.readFileSync("callback.json", "utf8");
   const jsonResponse = {
     status: "success",
-    message: "stk_push_result.json read successfully",
+    message: "callback.json read successfully",
     data: JSON.parse(content)
   };
   res.status(200).json(jsonResponse);
