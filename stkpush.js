@@ -5,11 +5,11 @@ const fs = require("fs");
 let phoneNumber = process.argv[2];
 let amount = process.argv[3];
 
-// Read data from keys.json
+// Read data from env.json
 try {
-  const keys = JSON.parse(fs.readFileSync("keys.json", "utf-8"));
+  const env = JSON.parse(fs.readFileSync("env.json", "utf-8"));
 
-  // Apply destructuring to keys object
+  // Apply destructuring to env object
   const {
     consumerKey,
     consumerSecret,
@@ -19,7 +19,7 @@ try {
     customerName,
     authorizationUrl,
     stkPushUrl
-  } = keys;
+  } = env;
 
   async function generateAccessToken() {
     const credentials = Buffer.from(

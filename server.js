@@ -10,11 +10,82 @@ const axios = require("axios");
 
 const bodyParser = require("body-parser");
 
-const mysql = require("mysql2");
+const mysql = require("mysql");
 
 app.use(bodyParser.urlencoded({ extended: false }));
 
 app.use(bodyParser.json());
+
+//Read data from env.json
+const env = JSON.parse(fs.readFileSync("env.json", "utf-8"));
+
+// Apply destructuring to env object
+const { db_Host, db_User, db_Password, db_Database } = env;
+
+//Database connection
+
+const connection = mysql.createConnection({
+  host: db_Host,
+  user: db_User,
+  password: db_Password,
+  database: db_Database
+});
+
+connection.connect((err) => {
+  if (err) throw err;
+
+  console.log("Connected! to the database successfully");
+});
+
+// Save the data to the database
+function saveToDatabase(token, content) {
+  const resultCode = content.Body.stkCallback.ResultCode;
+
+  if (resultCode === 0) {
+    // The request was successful
+    const sql = `INSERT INTO mpesa_transactions (MerchantRequestID, CheckoutRequestID, ResultCode, ResultDesc, Amount, MpesaReceiptNumber, TransactionDate, PhoneNumber, Token, created_at, updated_at) 
+                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
+
+    const values = [
+      content.Body.stkCallback.MerchantRequestID,
+      content.Body.stkCallback.CheckoutRequestID,
+      content.Body.stkCallback.ResultCode,
+      content.Body.stkCallback.ResultDesc,
+      content.Body.stkCallback.CallbackMetadata.Item[0].Value,
+      content.Body.stkCallback.CallbackMetadata.Item[1].Value,
+      content.Body.stkCallback.CallbackMetadata.Item[2].Value,
+      content.Body.stkCallback.CallbackMetadata.Item[3].Value,
+      token,
+      new Date(),
+      new Date()
+    ];
+
+    connection.query(sql, values, (err, result) => {
+      if (err) throw err;
+      console.log("1 record inserted");
+    });
+  } else {
+    // The request encountered an error
+    const sql = `INSERT INTO mpesa_transactions (MerchantRequestID, CheckoutRequestID, ResultCode, ResultDesc, Token, created_at, updated_at) 
+     VALUES (?, ?, ?, ?, ?, ?, ?)`;
+
+    const values = [
+      content.Body.stkCallback.MerchantRequestID,
+      content.Body.stkCallback.CheckoutRequestID,
+      content.Body.stkCallback.ResultCode,
+      content.Body.stkCallback.ResultDesc,
+      token,
+      new Date(),
+      new Date()
+    ];
+
+    connection.query(sql, values, (err, result) => {
+      if (err) throw err;
+      console.log("1 record inserted");
+    });
+  }
+}
+
 // route to stkpush.js
 app.post("/api/stkpush", (req, res) => {
   let phoneNumber = req.body.phoneNumber;
@@ -108,17 +179,20 @@ app.post("/api/callback", (req, res) => {
     console.error(error);
   }
 
-  // Send a success response to the caller
-
-  const jsonResponse = {
-    status: "success",
-    message: "Callback data received successfully",
-    data: {
-      token,
-      content
-    }
-  };
-  res.status(200).json(jsonResponse);
+  try {
+    // Save the data to the database
+    saveToDatabase(token, content);
+    // Send a success response to the caller
+    const jsonResponse = {
+      status: "success",
+      message: "Callback data received successfully",
+      data: { token, content }
+    };
+    res.status(200).json(jsonResponse);
+  } catch (error) {
+    console.error("Error saving to the database:", error);
+    res.status(500).json({ status: "error", message: "Internal server error" });
+  }
 });
 
 // route to read from stk_push_result
