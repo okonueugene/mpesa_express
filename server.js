@@ -2,19 +2,33 @@ const express = require("express");
 
 const app = express();
 
-const path = require("path");
-
 const fs = require("fs");
-
-const axios = require("axios");
 
 const bodyParser = require("body-parser");
 
 const mysql = require("mysql");
 
+const winston = require("winston");
+
 app.use(bodyParser.urlencoded({ extended: false }));
 
 app.use(bodyParser.json());
+
+// Create a logger
+const logger = winston.createLogger({
+  level: "info",
+  format: winston.format.combine(
+    winston.format.timestamp({ format: "YYYY-MM-DD HH:mm:ss" }),
+    winston.format.printf((info) => {
+      return `${info.timestamp} ${info.level}: ${info.message}`;
+    })
+  ),
+  transports: [
+    new winston.transports.Console(),
+    new winston.transports.File({ filename: "error.log", level: "error" }),
+    new winston.transports.File({ filename: "combined.log" })
+  ]
+});
 
 //Read data from env.json
 const env = JSON.parse(fs.readFileSync("env.json", "utf-8"));
@@ -33,20 +47,20 @@ const connection = mysql.createConnection({
 
 connection.connect((err) => {
   if (err) throw err;
-
+  logger.info("Connected! to the database successfully");
   console.log("Connected! to the database successfully");
 });
 
 // Save the data to the database
 function saveToDatabase(token, content) {
   const resultCode = content.Body.stkCallback.ResultCode;
+  let sql;
+  let values;
 
   if (resultCode === 0) {
-    // The request was successful
-    const sql = `INSERT INTO mpesa_transactions (MerchantRequestID, CheckoutRequestID, ResultCode, ResultDesc, Amount, MpesaReceiptNumber, TransactionDate, PhoneNumber, Token, created_at, updated_at) 
-                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
-
-    const values = [
+    sql = `INSERT INTO mpesa_transactions (MerchantRequestID, CheckoutRequestID, ResultCode, ResultDesc, Amount, MpesaReceiptNumber, TransactionDate, PhoneNumber, Token, created_at, updated_at) 
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
+    values = [
       content.Body.stkCallback.MerchantRequestID,
       content.Body.stkCallback.CheckoutRequestID,
       content.Body.stkCallback.ResultCode,
@@ -59,17 +73,10 @@ function saveToDatabase(token, content) {
       new Date(),
       new Date()
     ];
-
-    connection.query(sql, values, (err, result) => {
-      if (err) throw err;
-      console.log("1 record inserted");
-    });
   } else {
-    // The request encountered an error
-    const sql = `INSERT INTO mpesa_transactions (MerchantRequestID, CheckoutRequestID, ResultCode, ResultDesc, Token, created_at, updated_at) 
-     VALUES (?, ?, ?, ?, ?, ?, ?)`;
-
-    const values = [
+    sql = `INSERT INTO mpesa_transactions (MerchantRequestID, CheckoutRequestID, ResultCode, ResultDesc, Token, created_at, updated_at) 
+            VALUES (?, ?, ?, ?, ?, ?, ?)`;
+    values = [
       content.Body.stkCallback.MerchantRequestID,
       content.Body.stkCallback.CheckoutRequestID,
       content.Body.stkCallback.ResultCode,
@@ -78,12 +85,13 @@ function saveToDatabase(token, content) {
       new Date(),
       new Date()
     ];
-
-    connection.query(sql, values, (err, result) => {
-      if (err) throw err;
-      console.log("1 record inserted");
-    });
   }
+
+  connection.query(sql, values, (err, result) => {
+    if (err) console.error(err);
+    logger.info("Record inserted into the database");
+    console.log("Record inserted into the database");
+  });
 }
 
 // route to stkpush.js
@@ -109,19 +117,22 @@ app.post("/api/stkpush", (req, res) => {
   const child = spawn("node", ["stkpush.js", phoneNumber, amount]);
 
   let output = "";
-  let errorOutput = ""; // Capture error output
+  let errorOutput = "";
 
   child.stdout.on("data", (data) => {
     output += data.toString();
+    logger.info;
     console.log(`stdout:\n${data}`);
   });
 
   child.stderr.on("data", (data) => {
-    errorOutput += data.toString(); // Capture error output
+    errorOutput += data.toString();
+    logger.error;
     console.error(`stderr:\n${data}`);
   });
 
   child.on("close", (code) => {
+    logger.info;
     console.log(`stkpush.js exited with code ${code}`);
 
     if (code === 0) {
@@ -145,10 +156,10 @@ app.post("/api/stkpush", (req, res) => {
 
 // route to callback.js
 app.post("/api/callback", (req, res) => {
-  // Assuming the request body contains the JSON data from the incoming POST request
+  //Retrieve the content from the request body
   const content = req.body;
 
-  // Retrieve the token from the query parameter (equivalent to Laravel's $request->fullUrl())
+  // Retrieve the token from the query parameter
   const token = req.query.token;
 
   //check if callback.json exists
@@ -163,6 +174,7 @@ app.post("/api/callback", (req, res) => {
     const rawData = fs.readFileSync("callback.json");
     existingData = JSON.parse(rawData);
   } catch (error) {
+    logger.error(error);
     console.error(error);
   }
 
@@ -176,6 +188,7 @@ app.post("/api/callback", (req, res) => {
   try {
     fs.writeFileSync("callback.json", JSON.stringify(existingData));
   } catch (error) {
+    logger.error(error);
     console.error(error);
   }
 
@@ -186,10 +199,16 @@ app.post("/api/callback", (req, res) => {
     const jsonResponse = {
       status: "success",
       message: "Callback data received successfully",
-      data: { token, content }
+      time: new Date().toLocaleString(),
+      records: existingData.length,
+      data: {
+        token,
+        content
+      }
     };
     res.status(200).json(jsonResponse);
   } catch (error) {
+    logger.error("Error saving to the database:", error);
     console.error("Error saving to the database:", error);
     res.status(500).json({ status: "error", message: "Internal server error" });
   }
